@@ -41,14 +41,15 @@ ini_set("html_errors", 1);
                         $cat_array = getCategoryId($postRow['fk_i_category_id']);
                         $parent_cat_id = $cat_array['parent_id'];
                         $child_cat_id = $cat_array['child_id'];
+			$new_price = number_format(($postRow['i_price']/1000000),2);     
 
                         //generate SQL statement to inject post data
                         echo $new_post_Q = "
     						INSERT INTO posts (title, description, category_id, user_id, country_id, city_id, suburb_id, post_address, 
-						    price, status, whatsupp_status, 
+						    price, sale_price ,status, whatsupp_status, 
 						    created_at, post_type, is_dod,
-						    sf_entity_id, in_stock, store_customer_id, alternative_contacts, subcategory_id, slug, bumped_up_at) 
-    						VALUES ('".$postRow['s_title']."','".$postRow['s_description']."','".$parent_cat_id."', '$new_user_id', 56,'".getCityId($postRow['s_region'])."','".getSuburbId($postRow['s_city'])."', '".$postRow['s_address']."', '".getSuburbId($postRow['i_price'])."', '".$postRow['fk_moderator_action']."', 0, '".$postRow['dt_creat_date']."', 'classified', '0', '1', 1, NULL,NULL,'".$child_cat_id."','".$slug."','".$postRow['dt_creat_date']."')";
+						    sf_entity_id, in_stock, store_customer_id, alternative_contacts, subcategory_id, slug, bumped_up_at, ) 
+    						VALUES ('".$postRow['s_title']."','".$postRow['s_description']."','".$parent_cat_id."', '$new_user_id', 56,'".getCityId($postRow['s_region'])."','".getSuburbId($postRow['s_city'])."', '".$postRow['s_address']."','".$new_price."','".$new_price."','".$postRow['fk_moderator_action']."', 0, '".$postRow['dt_creat_date']."', 'classified', '0', '1', 1, NULL,NULL,'".$child_cat_id."','".$slug."','".$postRow['dt_creat_date']."')";
 
                         $host = "cassava-stage-db-001.cfamtribt3cd.ap-south-1.rds.amazonaws.com"; $user = "rajesh_stage"; $password = "bscWZI3k2jNeLWOA";
                         $tengai_db = @mysqli_connect($host, $user, $password, 'tengai_qa_migration') OR die ("Could not connect to MySQL: ".  mysqli_connect_error());
@@ -57,12 +58,16 @@ ini_set("html_errors", 1);
                             $new_post_id = $tengai_db->insert_id;
     			logEvent('post', 'created new post - for user :'.$new_user_id.', new_post_id:'.$new_post_id);    
         
-
                             // insert image, THIS ASSUMES ORIGINAL POST HAD 1 IMAGE
                             if (!is_null($postRow['s_name'])){
                                 //this can only get Id for a post after creation of the post
-                                echo $new_post_image_Q = "INSERT INTO picture_post (picture_id, post_id, featured, image_path) VALUES (NULL, $new_post_id, '1', '".$postRow['s_path'].$postRow['s_name'].'.'.$postRow['s_extension']."');";
-
+                                
+				// actual path     
+				//echo $new_post_image_Q = "INSERT INTO picture_post (picture_id, post_id, featured, image_path) VALUES (NULL, $new_post_id, '1', 'oc-content/uploads/".$postRow['s_path'].$postRow['s_name'].'.'.$postRow['s_extension']."');";
+				
+				// placeholder path - DELETE THIS WHEN WE MOVE TO PRODUCTION
+				echo $new_post_image_Q = "INSERT INTO picture_post (picture_id, post_id, featured, image_path) VALUES (NULL, $new_post_id, '1', 'oc-content/uploads/66/wSgtt25L.jpg');";
+				    
                                 if ($tengai_db->query($new_post_image_Q) === TRUE) {
                                     echo "Success: Image imported". "<br>";
     				logEvent('image', 'imported image(s) for post: '.$new_post_id);    
@@ -116,7 +121,7 @@ ini_set("html_errors", 1);
             //search for a matching category with this or similar name in the new database
             return getMatchingCategoryId($resRow['s_name']);
         }else{
-            return 19;
+            return 90; //set to default category
         }
     }
 
@@ -137,7 +142,7 @@ ini_set("html_errors", 1);
             $resRow = mysqli_fetch_assoc($result);
             return $resRow['id'];
         }
-        return 19;
+        return 90; //set to default category
 
     }
 
