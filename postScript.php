@@ -16,8 +16,10 @@ if ($result){
             $phone =  str_replace("+","",$resRow['s_phone_mobile']);
             if (getUserIdFromNewDb($phone, $tengai_db) > 0){
                 $new_user_id = getUserIdFromNewDb($phone, $tengai_db);
+		logEvent('user', 'created new user - old_id:'.$current_user_id.', new_id:'.$new_user_id);    
             }else{
                 $new_user_id = createNewUserOnNewDb($resRow, $tengai_db);
+		logEvent('user', 'created new user - old_id:'.$current_user_id.', new_id:'.$new_user_id);    
             }
 
             //fetch all posts fromt this user
@@ -46,37 +48,39 @@ if ($result){
 
                     if ($tengai_db->query($new_post_Q) === TRUE) {
                         $last_id = $tengai_db->insert_id;
-
-
+			logEvent('post', 'created new post - for user :'.$new_user_id.', new_post_id:'.$last_id);    
+    
                         if (!is_null($postRow['s_name'])){
                             //this can only get Id for a post after creation of the post
                             echo $new_post_image_Q = "INSERT INTO picture_post (picture_id, post_id, featured, image_path) VALUES (NULL, $last_id, '0', '".$postRow['s_path'].$postRow['s_name'].'.'.$postRow['s_extension']."');";
 
                             if ($tengai_db->query($new_post_image_Q) === TRUE) {
-
                                 echo "Success: Image imported". "<br>";
-
+				logEvent('image', 'imported image(s) for post: '.$last_id);    
                             } else {
                                 echo "Error: " . $new_post_Q . "<br>" . $tengai_db->error. "<br>";
+				logEvent('post', 'error creating post - for user :'.$new_user_id.', mysql error: '.$new_post_Q.' : '.$tengai_db->error);    
                             }
                         }
 
                     } else {
                         echo "Error: " . $new_post_Q . "<br>" . $tengai_db->error;
+			logEvent('post', 'error creating post - for user :'.$new_user_id.', old_post_id:'.$last_id);    
                     }
-
-
                 }
             }else{
                 //no posts under this user
+		logEvent('post', 'no posts - for user :'.$new_user_id);    
             }
         }
 
     }else{
         echo 'no_users';
+	logEvent('user', 'no users found');    
     }
 }else{
     echo 'system_error';
+    logEvent('user', 'system/database error could not fetch users');    
 }
 
 
@@ -214,6 +218,12 @@ function getSuburbId($suburb_name){
     }
     return 0;
 
+}
+
+function logEvent($component, $message){
+    $fp = fopen($component.'.txt', 'a');
+    fwrite($fp, date("Y-m-d H:i:s").' '.$message."\n"); 
+    fclose($fp);
 }
 
 ?>
