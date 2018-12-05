@@ -16,7 +16,7 @@ if ($result){
             $phone =  str_replace("+","",$resRow['s_phone_mobile']);
             if (getUserIdFromNewDb($phone, $tengai_db) > 0){
                 $new_user_id = getUserIdFromNewDb($phone, $tengai_db);
-		logEvent('user', 'created new user - old_id:'.$current_user_id.', new_id:'.$new_user_id);    
+		logEvent('user', 'user already exists - old_id:'.$current_user_id.', new_id:'.$new_user_id);    
             }else{
                 $new_user_id = createNewUserOnNewDb($resRow, $tengai_db);
 		logEvent('user', 'created new user - old_id:'.$current_user_id.', new_id:'.$new_user_id);    
