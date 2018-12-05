@@ -87,7 +87,17 @@ ini_set("html_errors", 1);
                                     echo "Error: " . $new_post_package_Q . "<br>" . $tengai_db->error. "<br>";
                     logEvent('post', 'error setting package for post :'.$new_post_id.', mysql error: '.$new_post_package_Q.' : '.$tengai_db->error);    
                                 }
-
+				
+			   Insert record of post attributes
+			   //set post attributes
+		 	   $new_post_attributes_Q = "INSERT INTO post_attributes (post_id, attribute_id, attribute_value_id) VALUES ('$new_post_id', '1', '1');";
+			     if ($tengai_db->query($new_post_attributes_Q) === TRUE) {
+			         echo "Success: Attributes set". "<br>";
+			         logEvent('post', 'set attributes for post: '.$new_post_id);    
+			     } else {
+			         echo "Error: " . $new_post_attributes_Q . "<br>" . $tengai_db->error. "<br>";
+			         logEvent('post', 'error setting attributes for post :'.$new_post_id.', mysql error: '.$new_post_attributes_Q.' : '.$tengai_db->error);    
+			     } 	
 
                         } else {
                             echo "Error: " . $new_post_Q . "<br>" . $tengai_db->error;
